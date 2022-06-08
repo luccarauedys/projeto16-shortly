@@ -1,11 +1,11 @@
 import express from 'express';
 
 import { signUp, signIn } from './../controllers/authController.js';
-import { validateSignUpInfos } from '../middlewares/authMiddlewares.js';
+import { validateSignUpInfos, validateSignInInfos } from '../middlewares/authMiddlewares.js';
 
 const authRouter = express.Router();
 
 authRouter.post('/signup', validateSignUpInfos, signUp);
-authRouter.post('/signin', signIn);
+authRouter.post('/signin', validateSignInInfos, signIn);
 
 export default authRouter;
