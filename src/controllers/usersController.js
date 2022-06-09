@@ -1,7 +1,9 @@
 import db from './../config/database.js';
 
-export const getUser = async (req, res) => {
+export const getUserInfos = async (req, res) => {
   const userId = parseInt(req.params.id);
+  const idByToken = res.locals.userId;
+  if (userId !== idByToken) return res.sendStatus(401);
 
   try {
     const { rows: user } = await db.query(
@@ -30,7 +32,21 @@ export const getUser = async (req, res) => {
   }
 };
 
-export const getUsersRanking = async (req, res) => {};
+export const getRanking = async (req, res) => {
+  try {
+    const { rows: ranking } = await db.query(`
+    SELECT users.id, users.name, COUNT(urls.id) as "linksCount", SUM(urls."visitCount") as "visitCount" FROM users 
+    LEFT JOIN urls ON users.id = urls."userId"
+    WHERE urls."deletedAt" IS NULL AND users."deletedAt" IS NULL
+    GROUP BY users.id
+    ORDER BY "visitCount" DESC
+    LIMIT 10;
+    `);
+    res.status(200).send(ranking);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
 
 function formatResponse(obj, arr) {
   return {
